@@ -14,6 +14,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float sprintSpeed = 8f;
 
+    [Header("Rotation")]
+    [SerializeField] private float mouseSensitivity = 2f;
+    private float xRotation = 0f;
+    [SerializeField] Camera camera;
+
 
     
     
@@ -36,6 +41,7 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         PlayerMovement();
+        PlayerRotation();
     }
 
     void PlayerMovement()
@@ -50,6 +56,19 @@ public class PlayerController : MonoBehaviour
         float speed = Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : moveSpeed;
         controller.Move(moveDirection * speed * Time.deltaTime);
 
+
+    }
+
+    void PlayerRotation()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+
+        // Accounts for rotation system in which when mouseY > 0, Unity's system states that a Positive X rotation will tilt the object down
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -80f, 80f);
+        camera.transform.localRotation = Quaternion.Euler(xRotation, 0, 0);
+        transform.Rotate(Vector3.up * mouseX);
 
     }
 }
