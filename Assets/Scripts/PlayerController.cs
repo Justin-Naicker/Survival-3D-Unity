@@ -8,32 +8,35 @@ RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
     private CharacterController controller;
-    
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float sprintSpeed = 8f;
+    [SerializeField] private float crouchSpeed = 1f;
 
     [SerializeField] private float gravity = -9.81f;
-    [SerializeField] private float jumpHeight = 10f;
+    [SerializeField] private float jumpHeight = 1f;
     private Vector3 velocity;
 
     [Header("Ground Check")]
-    [SerializeField] private GameObject groundObject;
     [SerializeField] private float groundRadius = 0.1f;
     [SerializeField] private LayerMask groundMask;
 
-    
+    [Header("Crouch Check")]
+    [SerializeField] private bool isCrouching;
+    [SerializeField] private float standingHeight = 2f;
+    [SerializeField] private float crouchingHeight = 1f;
 
     [Header("Rotation")]
     [SerializeField] private float mouseSensitivity = 2f;
     private float xRotation = 0f;
-    [SerializeField] Camera camera;
+    [SerializeField] private new Camera camera;
 
 
-    
-    
-    
+
+
+
+
     void Awake()
     {
         
@@ -61,26 +64,28 @@ public class PlayerController : MonoBehaviour
         float vertical = Input.GetAxis("Vertical");
 
         Vector3 moveDirection = horizontal * transform.right + vertical * transform.forward;
-        // Clamp Magnitude clamps an entire Vector
         moveDirection = Vector3.ClampMagnitude(moveDirection, 1f);
 
-        float speed = Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : moveSpeed;
+        isCrouching = Input.GetKey(KeyCode.LeftControl);
+
+        float speed = isCrouching ? crouchSpeed : (Input.GetKey(KeyCode.LeftShift) ? sprintSpeed : moveSpeed);
         controller.Move(moveDirection * speed * Time.deltaTime);
 
-        if (isGrounded() && Input.GetKeyDown(KeyCode.Space))
-        {
-            // Use the formula v^2 = v0^2 + 2 * a * delta y
-            // v0^2 = -2 * delta a * y => v0 = sqrt(-2 * a * delta y)
-            // This creates the velocity vector, now needs to be applied
-            velocity.y = Mathf.Sqrt(-2 * gravity * jumpHeight);
-        }
+        if (isGrounded() && velocity.y < 0)
+            velocity.y = -2f;
 
-        // Apply the velocity vector under the constraints of gravity
-        //v = v0 + a * t
+        if (isGrounded() && !isCrouching && Input.GetKeyDown(KeyCode.Space))
+            velocity.y = Mathf.Sqrt(-2 * gravity * jumpHeight);
+
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
+        // Smooth crouch/stand
+        float targetHeight = isCrouching ? crouchingHeight : standingHeight;
+        controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * 10f);
+        controller.center = new Vector3(0, controller.height / 2f, 0);
     }
+
 
     void PlayerRotation()
     {
