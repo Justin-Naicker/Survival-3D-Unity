@@ -26,15 +26,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool isCrouching;
     [SerializeField] private float standingHeight = 2f;
     [SerializeField] private float crouchingHeight = 1f;
+    [SerializeField] private GameObject groundObject;
 
     [Header("Rotation")]
     [SerializeField] private float mouseSensitivity = 2f;
     private float xRotation = 0f;
     [SerializeField] private new Camera camera;
-
-
-
-
 
 
     void Awake()
@@ -80,10 +77,16 @@ public class PlayerController : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
-        // Smooth crouch/stand
+        Vector3 crouchingCenter = new Vector3(0f, -0.5f, 0f);
+        Vector3 standingCenter = new Vector3(0f, 0f, 0f);
+
         float targetHeight = isCrouching ? crouchingHeight : standingHeight;
-        controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * 10f);
-        controller.center = new Vector3(0, controller.height / 2f, 0);
+        Vector3 targetCenter = isCrouching ? crouchingCenter : standingCenter;
+
+        controller.height = targetHeight;
+        controller.center = targetCenter;
+
+        // Add Interpolation for crouching
     }
 
 
