@@ -504,6 +504,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   sprintSpeed: 8
+  mouseSensitivity: 2
+  camera: {fileID: 330585545}
 --- !u!143 &777181704
 CharacterController:
   m_ObjectHideFlags: 0
