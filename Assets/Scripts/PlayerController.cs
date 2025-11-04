@@ -1,6 +1,7 @@
-using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.InputSystem.XR;
 
 [
 
@@ -77,16 +78,18 @@ public class PlayerController : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
-        Vector3 crouchingCenter = new Vector3(0f, -0.5f, 0f);
-        Vector3 standingCenter = new Vector3(0f, 0f, 0f);
+
 
         float targetHeight = isCrouching ? crouchingHeight : standingHeight;
-        Vector3 targetCenter = isCrouching ? crouchingCenter : standingCenter;
+        Vector3 targetCenter = isCrouching ? new Vector3(0f, -0.5f, 0f) : Vector3.zero;
 
-        controller.height = targetHeight;
-        controller.center = targetCenter;
+        // Lerp(a,b,t) = a + (b - a) * t
+        // a = 2 (current height), b = 1 (target crouch height), t = 0.1 (time)
+        // Lerp(2,1,0.1) = 2 + (1 - 2) * 0.1 = 1.9
 
-        // Add Interpolation for crouching
+        // Vector3.Lerp((x1, y1, z1), (x2, y2, z2), t) = (x1 +(x2 − x1) ∗ t, y1 + (y2 − y1) ∗ t, z1 + (z2 − z1) ∗t)
+        controller.height = Mathf.Lerp(controller.height, targetHeight, Time.deltaTime * 8f);
+        controller.center = Vector3.Lerp(controller.center, targetCenter, Time.deltaTime * 8f);
     }
 
 
